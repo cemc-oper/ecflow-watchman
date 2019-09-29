@@ -15,5 +15,8 @@ func GetEcflowStatus(host string, port string) {
 	}
 
 	records := client.StatusRecords()
-	log.Info("get nodes: ", len(records))
+	log.WithFields(log.Fields{
+		"host": host,
+		"port": port,
+	}).Info("get ", len(records), " nodes at ", client.CollectedTime)
 }
