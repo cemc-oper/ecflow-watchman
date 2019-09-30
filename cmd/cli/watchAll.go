@@ -49,7 +49,7 @@ var watchAllCmd = &cobra.Command{
 			go func(job ScrapeJob, redisUrl string, scrapeInterval time.Duration) {
 				c := time.Tick(scrapeInterval)
 				for _ = range c {
-					ecflow_watchman.GetEcflowStatus(job.Owner, job.Repo, job.Host, job.Port, redisUrl)
+					ecflow_watchman.GetEcflowStatus(job.EcflowServerConfig, redisUrl)
 				}
 			}(job, redisUrl, scrapeInterval)
 			log.Info("new job loaded: ", job.Owner, "/", job.Repo)
@@ -84,11 +84,8 @@ type Config struct {
 }
 
 type ScrapeJob struct {
-	JobName string `yaml:"job_name"`
-	Owner   string `yaml:"owner"`
-	Repo    string `yaml:"repo"`
-	Host    string `yaml:"host"`
-	Port    string `yaml:"port"`
+	JobName                            string `yaml:"job_name"`
+	ecflow_watchman.EcflowServerConfig `yaml:",inline"`
 }
 
 type GlobalConfig struct {

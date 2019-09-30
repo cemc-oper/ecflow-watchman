@@ -41,7 +41,13 @@ var watchCmd = &cobra.Command{
 		}
 		c := time.Tick(duration)
 		for _ = range c {
-			ecflow_watchman.GetEcflowStatus(owner, repo, ecflowHost, ecflowPort, redisUrl)
+			ecflow_watchman.GetEcflowStatus(ecflow_watchman.EcflowServerConfig{
+				Owner:          owner,
+				Repo:           repo,
+				Host:           ecflowHost,
+				Port:           ecflowPort,
+				ConnectTimeout: 10,
+			}, redisUrl)
 		}
 	},
 }

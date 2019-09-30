@@ -13,8 +13,17 @@ type EcflowServerStatus struct {
 	CollectedTime time.Time                    `json:"collected_time"`
 }
 
-func GetEcflowStatus(owner string, repo string, host string, port string, redisUrl string) {
-	client := ecflow_client.CreateEcflowClient(host, port)
+type EcflowServerConfig struct {
+	Owner          string `yaml:"owner"`
+	Repo           string `yaml:"repo"`
+	Host           string `yaml:"host"`
+	Port           string `yaml:"port"`
+	ConnectTimeout int    `yaml:"connect_timeout"`
+}
+
+func GetEcflowStatus(config EcflowServerConfig, redisUrl string) {
+	client := ecflow_client.CreateEcflowClient(config.Host, config.Port)
+	client.SetConnectTimeout(config.ConnectTimeout)
 	defer client.Close()
 
 	ret := client.Sync()
@@ -30,8 +39,8 @@ func GetEcflowStatus(owner string, repo string, host string, port string, redisU
 	}
 
 	log.WithFields(log.Fields{
-		"owner": owner,
-		"repo":  repo,
+		"owner": config.Owner,
+		"repo":  config.Repo,
 	}).Info(
 		"get ",
 		len(ecflowServerStatus.StatusRecords),
@@ -41,13 +50,13 @@ func GetEcflowStatus(owner string, repo string, host string, port string, redisU
 	b, err := json.Marshal(ecflowServerStatus)
 	if err != nil {
 		log.WithFields(log.Fields{
-			"owner": owner,
-			"repo":  repo,
+			"owner": config.Owner,
+			"repo":  config.Repo,
 		}).Error("Marshal json has error: ", err)
 		return
 	}
 
-	key := owner + "/" + repo + "/status"
+	key := config.Owner + "/" + config.Repo + "/status"
 
 	redisClient := redis.NewClient(&redis.Options{
 		Addr:     redisUrl,
@@ -63,8 +72,8 @@ func GetEcflowStatus(owner string, repo string, host string, port string, redisU
 	}
 
 	log.WithFields(log.Fields{
-		"owner": owner,
-		"repo":  repo,
+		"owner": config.Owner,
+		"repo":  config.Repo,
 	}).Info(
 		"write to redis at ",
 		time.Now().Format("2006-01-02 15:04:05.999999"))
