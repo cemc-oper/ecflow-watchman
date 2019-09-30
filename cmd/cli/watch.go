@@ -32,8 +32,8 @@ func init() {
 
 var watchCmd = &cobra.Command{
 	Use:   "watch",
-	Short: "watch ecFlow servers",
-	Long:  "watch ecFlow servers",
+	Short: "watch a single ecFlow server",
+	Long:  "watch a single ecFlow server",
 	Run: func(cmd *cobra.Command, args []string) {
 		duration, err := time.ParseDuration(scrapeInterval)
 		if err != nil {

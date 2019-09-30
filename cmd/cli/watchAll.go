@@ -54,6 +54,9 @@ var watchAllCmd = &cobra.Command{
 			}(job, redisUrl, scrapeInterval)
 			log.Info("new job loaded: ", job.Owner, "/", job.Repo)
 		}
+
+		// block forever in the main goroutine
+		// see: https://blog.sgmansfield.com/2016/06/how-to-block-forever-in-go/
 		select {}
 	},
 }
