@@ -67,6 +67,6 @@ func GetEcflowStatus(owner string, repo string, host string, port string, redisU
 		"repo":  repo,
 	}).Info(
 		"write to redis at ",
-		ecflowServerStatus.CollectedTime.Format("2006-01-02 15:04:05.999999"))
+		time.Now().Format("2006-01-02 15:04:05.999999"))
 
 }
