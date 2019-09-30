@@ -7,11 +7,12 @@ import (
 )
 
 var (
-	owner      = ""
-	repo       = ""
-	ecflowHost = ""
-	ecflowPort = ""
-	redisUrl   = ""
+	owner          = ""
+	repo           = ""
+	ecflowHost     = ""
+	ecflowPort     = ""
+	redisUrl       = ""
+	scrapeInterval = ""
 )
 
 func init() {
@@ -22,6 +23,7 @@ func init() {
 	watchCmd.Flags().StringVar(&ecflowHost, "ecflow-host", "", "ecFlow server host")
 	watchCmd.Flags().StringVar(&ecflowPort, "ecflow-port", "", "ecFlow server port")
 	watchCmd.Flags().StringVar(&redisUrl, "redis-url", "", "redis url")
+	watchCmd.Flags().StringVar(&scrapeInterval, "scrape-interval", "10s", "scrape interval")
 	watchCmd.MarkFlagRequired("owner")
 	watchCmd.MarkFlagRequired("port")
 	watchCmd.MarkFlagRequired("ecflow-host")
@@ -33,7 +35,11 @@ var watchCmd = &cobra.Command{
 	Short: "watch ecFlow servers",
 	Long:  "watch ecFlow servers",
 	Run: func(cmd *cobra.Command, args []string) {
-		c := time.Tick(10 * time.Second)
+		duration, err := time.ParseDuration(scrapeInterval)
+		if err != nil {
+			panic(err)
+		}
+		c := time.Tick(duration)
 		for _ = range c {
 			ecflow_watchman.GetEcflowStatus(owner, repo, ecflowHost, ecflowPort, redisUrl)
 		}
