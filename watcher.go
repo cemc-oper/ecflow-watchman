@@ -1,11 +1,19 @@
 package ecflow_watchman
 
 import (
+	"encoding/json"
+	"github.com/go-redis/redis"
 	"github.com/perillaroc/ecflow-client-go"
 	log "github.com/sirupsen/logrus"
+	"time"
 )
 
-func GetEcflowStatus(host string, port string) {
+type EcflowServerStatus struct {
+	StatusRecords []ecflow_client.StatusRecord `json:"status_records"`
+	CollectedTime time.Time                    `json:"collected_time"`
+}
+
+func GetEcflowStatus(owner string, repo string, host string, port string, redisUrl string) {
 	client := ecflow_client.CreateEcflowClient(host, port)
 	defer client.Close()
 
@@ -15,8 +23,39 @@ func GetEcflowStatus(host string, port string) {
 	}
 
 	records := client.StatusRecords()
+
+	ecflowServerStatus := EcflowServerStatus{
+		StatusRecords: records,
+		CollectedTime: client.CollectedTime,
+	}
+
 	log.WithFields(log.Fields{
-		"host": host,
-		"port": port,
-	}).Info("get ", len(records), " nodes at ", client.CollectedTime)
+		"owner": owner,
+		"repo":  repo,
+	}).Info("get ", len(ecflowServerStatus.StatusRecords), " nodes at ", ecflowServerStatus.CollectedTime)
+
+	b, err := json.Marshal(ecflowServerStatus)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"owner": owner,
+			"repo":  repo,
+		}).Error("Marshal json has error: ", err)
+		return
+	}
+
+	key := owner + "/" + repo + "/status"
+
+	redisClient := redis.NewClient(&redis.Options{
+		Addr:     redisUrl,
+		Password: "",
+		DB:       0,
+	})
+
+	defer redisClient.Close()
+
+	err = redisClient.Set(key, b, 0).Err()
+	if err != nil {
+		panic(err)
+	}
+
 }

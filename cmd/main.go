@@ -1,7 +1,7 @@
 package main
 
 import (
-	"ecflow-watchman/cmd/cli"
+	"github.com/perillaroc/ecflow-watchman/cmd/cli"
 )
 
 func main() {
