@@ -1,0 +1,94 @@
+package cli
+
+import (
+	"github.com/perillaroc/ecflow-watchman"
+	log "github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v2"
+	"io/ioutil"
+	"time"
+)
+
+var (
+	configFilePath = ""
+)
+
+func init() {
+	rootCmd.AddCommand(watchAllCmd)
+
+	watchAllCmd.Flags().StringVar(&configFilePath, "config-file", "", "config file path")
+	watchAllCmd.MarkFlagRequired("config-file")
+}
+
+var watchAllCmd = &cobra.Command{
+	Use:   "watch-all",
+	Short: "watch all ecFlow servers",
+	Long:  "watch all ecFlow servers",
+	Run: func(cmd *cobra.Command, args []string) {
+		config, err := readConfig(configFilePath)
+		if err != nil {
+			panic(err)
+		}
+
+		// scrape interval
+		scrapeInterval, err := time.ParseDuration(config.Global.ScrapeInterval)
+		if err != nil {
+			panic(err)
+		}
+		log.Info("scrape_interval = ", scrapeInterval)
+
+		// sink
+		sinkType := config.SinkConfig["type"].(string)
+		if sinkType != "redis" {
+			log.Fatal("sink type is not supported: ", sinkType)
+		}
+		redisUrl := config.SinkConfig["url"].(string)
+		log.Info("sink to redis: ", redisUrl)
+
+		for _, job := range config.ScrapeConfigs {
+			go func(job ScrapeJob, redisUrl string, scrapeInterval time.Duration) {
+				c := time.Tick(scrapeInterval)
+				for _ = range c {
+					ecflow_watchman.GetEcflowStatus(job.Owner, job.Repo, job.Host, job.Port, redisUrl)
+				}
+			}(job, redisUrl, scrapeInterval)
+			log.Info("new job loaded: ", job.Owner, "/", job.Repo)
+		}
+		select {}
+	},
+}
+
+type ConfigDict map[interface{}]interface{}
+type ConfigArray []interface{}
+
+func readConfig(path string) (Config, error) {
+	data, err := ioutil.ReadFile(path)
+	if err != nil {
+		return Config{}, err
+	}
+	config := Config{}
+	err = yaml.Unmarshal(data, &config)
+	if err != nil {
+		return Config{}, err
+	}
+	return config, nil
+}
+
+type Config struct {
+	Global        GlobalConfig `yaml:"global"`
+	ScrapeConfigs []ScrapeJob  `yaml:"scrape_configs"`
+	SinkConfig    ConfigDict   `yaml:"sink_config"`
+}
+
+type ScrapeJob struct {
+	JobName string `yaml:"job_name"`
+	Owner   string `yaml:"owner"`
+	Repo    string `yaml:"repo"`
+	Host    string `yaml:"host"`
+	Port    string `yaml:"port"`
+}
+
+type GlobalConfig struct {
+	ScrapeInterval string `yaml:"scrape_interval"`
+	ScrapeTimeout  string `yaml:"scrape_timeout"`
+}

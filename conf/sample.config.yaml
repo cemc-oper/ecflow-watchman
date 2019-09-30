@@ -1,0 +1,15 @@
+global:
+  scrape_interval: 20s
+  scrape_timeout: 10s # not worked
+
+scrape_configs:
+  -
+    job_name: job name
+    owner: owner
+    repo: repo
+    host: ecflow server host
+    port: ecflow server port
+
+sink_config:
+  type: redis # only redis is supported
+  url: redis url

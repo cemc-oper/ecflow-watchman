@@ -32,7 +32,11 @@ func GetEcflowStatus(owner string, repo string, host string, port string, redisU
 	log.WithFields(log.Fields{
 		"owner": owner,
 		"repo":  repo,
-	}).Info("get ", len(ecflowServerStatus.StatusRecords), " nodes at ", ecflowServerStatus.CollectedTime)
+	}).Info(
+		"get ",
+		len(ecflowServerStatus.StatusRecords),
+		" nodes at ",
+		ecflowServerStatus.CollectedTime.Format("2006-01-02 15:04:05.999999"))
 
 	b, err := json.Marshal(ecflowServerStatus)
 	if err != nil {
@@ -57,5 +61,12 @@ func GetEcflowStatus(owner string, repo string, host string, port string, redisU
 	if err != nil {
 		panic(err)
 	}
+
+	log.WithFields(log.Fields{
+		"owner": owner,
+		"repo":  repo,
+	}).Info(
+		"write to redis at ",
+		ecflowServerStatus.CollectedTime.Format("2006-01-02 15:04:05.999999"))
 
 }
