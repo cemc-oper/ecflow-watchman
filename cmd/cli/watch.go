@@ -28,6 +28,7 @@ func init() {
 	watchCmd.MarkFlagRequired("port")
 	watchCmd.MarkFlagRequired("ecflow-host")
 	watchCmd.MarkFlagRequired("ecflow-port")
+	watchCmd.MarkFlagRequired("redis-url")
 }
 
 var watchCmd = &cobra.Command{
