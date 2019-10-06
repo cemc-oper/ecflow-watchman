@@ -51,6 +51,10 @@ func GetEcflowStatus(config EcflowServerConfig, redisUrl string) {
 		" nodes at ",
 		ecflowServerStatus.CollectedTime.Format("2006-01-02 15:04:05.999999"))
 
+	StoreToRedis(config, ecflowServerStatus, redisUrl)
+}
+
+func StoreToRedis(config EcflowServerConfig, ecflowServerStatus EcflowServerStatus, redisUrl string) {
 	b, err := json.Marshal(ecflowServerStatus)
 	if err != nil {
 		log.WithFields(log.Fields{
@@ -85,5 +89,4 @@ func GetEcflowStatus(config EcflowServerConfig, redisUrl string) {
 	}).Info(
 		"write to redis at ",
 		time.Now().Format("2006-01-02 15:04:05.999999"))
-
 }
