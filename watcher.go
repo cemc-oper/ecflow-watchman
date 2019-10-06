@@ -28,7 +28,11 @@ func GetEcflowStatus(config EcflowServerConfig, redisUrl string) {
 
 	ret := client.Sync()
 	if ret != 0 {
-		log.Fatal("sync has error")
+		log.WithFields(log.Fields{
+			"owner": config.Owner,
+			"repo":  config.Repo,
+		}).Error("sync has error: ", ret)
+		return
 	}
 
 	records := client.StatusRecords()
@@ -68,7 +72,11 @@ func GetEcflowStatus(config EcflowServerConfig, redisUrl string) {
 
 	err = redisClient.Set(key, b, 0).Err()
 	if err != nil {
-		panic(err)
+		log.WithFields(log.Fields{
+			"owner": config.Owner,
+			"repo":  config.Repo,
+		}).Error("store to redis has error: ", err)
+		return
 	}
 
 	log.WithFields(log.Fields{
