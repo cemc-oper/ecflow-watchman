@@ -7,7 +7,7 @@ require (
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/onsi/ginkgo v1.10.2 // indirect
 	github.com/onsi/gomega v1.7.0 // indirect
-	github.com/perillaroc/ecflow-client-go v0.0.0-20191008105103-d24b7ec6b63d
+	github.com/perillaroc/ecflow-client-go v0.0.0-20191014135242-8f2275ce057f
 	github.com/sirupsen/logrus v1.4.2
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/pflag v1.0.5 // indirect

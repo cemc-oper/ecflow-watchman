@@ -34,6 +34,8 @@ github.com/onsi/gomega v1.7.0/go.mod h1:ex+gbHU/CVuBBDIJjb2X0qEXbFg53c61hWP/1Cpa
 github.com/pelletier/go-toml v1.2.0/go.mod h1:5z9KED0ma1S8pY6P1sdut58dfprrGBbd/94hg7ilaic=
 github.com/perillaroc/ecflow-client-go v0.0.0-20191008105103-d24b7ec6b63d h1:BlgA1SIAMn/rAbe6x7jRNsTeL4U1krzeOiokSBhL5ho=
 github.com/perillaroc/ecflow-client-go v0.0.0-20191008105103-d24b7ec6b63d/go.mod h1:EyVXyEM9N+oLZfhhR+D6yWyGE1FbX3Xvr0D3J7fWfS4=
+github.com/perillaroc/ecflow-client-go v0.0.0-20191014135242-8f2275ce057f h1:+tDgEI1141VEzxabmbhiGiGbv+Y7Ohqj3bo3IBTZwxk=
+github.com/perillaroc/ecflow-client-go v0.0.0-20191014135242-8f2275ce057f/go.mod h1:EyVXyEM9N+oLZfhhR+D6yWyGE1FbX3Xvr0D3J7fWfS4=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/russross/blackfriday v1.5.2/go.mod h1:JO/DiYxRf+HjHt06OyowR9PTA263kcR/rfWxYHBV53g=
