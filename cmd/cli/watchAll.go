@@ -2,7 +2,6 @@ package cli
 
 import (
 	"encoding/json"
-	"github.com/go-redis/redis"
 	"github.com/perillaroc/ecflow-watchman"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -53,31 +52,30 @@ var watchAllCmd = &cobra.Command{
 			go func(job ScrapeJob, redisUrl string) {
 				channelName := job.Owner + "/" + job.Repo + "/status/channel"
 
-				redisClient := redis.NewClient(&redis.Options{
-					Addr:     redisUrl,
-					Password: "",
-					DB:       0,
-				})
-				defer redisClient.Close()
+				redisPublisher := ecflow_watchman.RedisPublisher{
+					Client:      nil,
+					Pubsub:      nil,
+					ChannelName: channelName,
+					Address:     redisUrl,
+					Password:    "",
+					Database:    0,
+				}
 
+				redisPublisher.Create()
 				log.WithFields(log.Fields{
 					"owner": job.Owner,
 					"repo":  job.Repo,
 				}).Infof("subscribe redis...%s", channelName)
-				pubsub := redisClient.Subscribe(channelName)
-				_, err := pubsub.Receive()
-				if err != nil {
-					panic(err)
-				}
+				defer redisPublisher.Close()
 
-				defer pubsub.Close()
 				for message := range messages {
 					log.WithFields(log.Fields{
 						"owner": job.Owner,
 						"repo":  job.Repo,
 					}).Infof("publish to redis...")
-					redisCmd := redisClient.Publish(channelName, message)
-					err = redisCmd.Err()
+
+					err = redisPublisher.Publish(message)
+
 					if err != nil {
 						log.WithFields(log.Fields{
 							"owner": job.Owner,
