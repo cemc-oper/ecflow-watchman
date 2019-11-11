@@ -1,6 +1,8 @@
 package cli
 
 import (
+	"encoding/json"
+	"github.com/go-redis/redis"
 	"github.com/perillaroc/ecflow-watchman"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -47,8 +49,48 @@ var watchAllCmd = &cobra.Command{
 
 		for _, job := range config.ScrapeConfigs {
 			// create redis publisher for each scrape job
+			messages := make(chan []byte)
 			go func(job ScrapeJob, redisUrl string) {
+				channelName := job.Owner + "/" + job.Repo + "/status/channel"
 
+				redisClient := redis.NewClient(&redis.Options{
+					Addr:     redisUrl,
+					Password: "",
+					DB:       0,
+				})
+				defer redisClient.Close()
+
+				log.WithFields(log.Fields{
+					"owner": job.Owner,
+					"repo":  job.Repo,
+				}).Infof("subscribe redis...%s", channelName)
+				pubsub := redisClient.Subscribe(channelName)
+				_, err := pubsub.Receive()
+				if err != nil {
+					panic(err)
+				}
+
+				defer pubsub.Close()
+				for message := range messages {
+					log.WithFields(log.Fields{
+						"owner": job.Owner,
+						"repo":  job.Repo,
+					}).Infof("publish to redis...")
+					redisCmd := redisClient.Publish(channelName, message)
+					err = redisCmd.Err()
+					if err != nil {
+						log.WithFields(log.Fields{
+							"owner": job.Owner,
+							"repo":  job.Repo,
+						}).Errorf("publish to redis has error: %v", err)
+
+					} else {
+						log.WithFields(log.Fields{
+							"owner": job.Owner,
+							"repo":  job.Repo,
+						}).Infof("publish to redis...done")
+					}
+				}
 			}(job, redisUrl)
 
 			// create collect goroutine for each scrape job
@@ -61,13 +103,28 @@ var watchAllCmd = &cobra.Command{
 						return
 					}
 
+					b, err := json.Marshal(ecflowServerStatus)
+					if err != nil {
+						log.WithFields(log.Fields{
+							"owner": job.EcflowServerConfig.Owner,
+							"repo":  job.EcflowServerConfig.Repo,
+						}).Error("Marshal json has error: ", err)
+						return
+					}
+
 					// save to redis key
-					go func(
-						config ecflow_watchman.EcflowServerConfig,
-						ecflowServerStatus ecflow_watchman.EcflowServerStatus,
-						redisUrl string) {
-						ecflow_watchman.StoreToRedis(config, ecflowServerStatus, redisUrl)
-					}(job.EcflowServerConfig, *ecflowServerStatus, redisUrl)
+					ecflow_watchman.StoreToRedis(job.EcflowServerConfig, b, redisUrl)
+
+					// NOTE: may cause I/O timeout when running in goroutine.
+					//go func(
+					//	config ecflow_watchman.EcflowServerConfig,
+					//	message []byte,
+					//	redisUrl string) {
+					//	ecflow_watchman.StoreToRedis(config, message, redisUrl)
+					//}(job.EcflowServerConfig, *ecflowServerStatus, redisUrl)
+
+					// send message to channel
+					messages <- b
 				}
 			}(job, redisUrl, scrapeInterval)
 

@@ -1,7 +1,9 @@
 package cli
 
 import (
+	"encoding/json"
 	"github.com/perillaroc/ecflow-watchman"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"time"
 )
@@ -53,7 +55,15 @@ var watchCmd = &cobra.Command{
 			if ecflowServerStatus == nil {
 				continue
 			}
-			ecflow_watchman.StoreToRedis(config, *ecflowServerStatus, redisUrl)
+			b, err := json.Marshal(ecflowServerStatus)
+			if err != nil {
+				log.WithFields(log.Fields{
+					"owner": config.Owner,
+					"repo":  config.Repo,
+				}).Error("Marshal json has error: ", err)
+				return
+			}
+			ecflow_watchman.StoreToRedis(config, b, redisUrl)
 		}
 	},
 }

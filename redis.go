@@ -1,26 +1,16 @@
 package ecflow_watchman
 
 import (
-	"encoding/json"
 	"github.com/go-redis/redis"
 	log "github.com/sirupsen/logrus"
 	"time"
 )
 
-func StoreToRedis(config EcflowServerConfig, ecflowServerStatus EcflowServerStatus, redisUrl string) {
+func StoreToRedis(config EcflowServerConfig, message []byte, redisUrl string) {
 	log.WithFields(log.Fields{
 		"owner": config.Owner,
 		"repo":  config.Repo,
-	}).Infof("begin to store to redis... ")
-
-	b, err := json.Marshal(ecflowServerStatus)
-	if err != nil {
-		log.WithFields(log.Fields{
-			"owner": config.Owner,
-			"repo":  config.Repo,
-		}).Error("Marshal json has error: ", err)
-		return
-	}
+	}).Infof("store to redis... ")
 
 	key := config.Owner + "/" + config.Repo + "/status"
 
@@ -32,7 +22,7 @@ func StoreToRedis(config EcflowServerConfig, ecflowServerStatus EcflowServerStat
 
 	defer redisClient.Close()
 
-	err = redisClient.Set(key, b, 0).Err()
+	err := redisClient.Set(key, message, 0).Err()
 	if err != nil {
 		log.WithFields(log.Fields{
 			"owner": config.Owner,
