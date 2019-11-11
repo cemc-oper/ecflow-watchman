@@ -8,6 +8,11 @@ import (
 )
 
 func StoreToRedis(config EcflowServerConfig, ecflowServerStatus EcflowServerStatus, redisUrl string) {
+	log.WithFields(log.Fields{
+		"owner": config.Owner,
+		"repo":  config.Repo,
+	}).Infof("begin to store to redis... ")
+
 	b, err := json.Marshal(ecflowServerStatus)
 	if err != nil {
 		log.WithFields(log.Fields{

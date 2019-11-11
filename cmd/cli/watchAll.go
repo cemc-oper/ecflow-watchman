@@ -46,12 +46,31 @@ var watchAllCmd = &cobra.Command{
 		log.Info("sink to redis: ", redisUrl)
 
 		for _, job := range config.ScrapeConfigs {
+			// create redis publisher for each scrape job
+			go func(job ScrapeJob, redisUrl string) {
+
+			}(job, redisUrl)
+
+			// create collect goroutine for each scrape job
 			go func(job ScrapeJob, redisUrl string, scrapeInterval time.Duration) {
 				c := time.Tick(scrapeInterval)
 				for _ = range c {
-					ecflow_watchman.GetEcflowStatus(job.EcflowServerConfig, redisUrl)
+					// get ecflow server status
+					ecflowServerStatus := ecflow_watchman.GetEcflowStatus(job.EcflowServerConfig)
+					if ecflowServerStatus == nil {
+						return
+					}
+
+					// save to redis key
+					go func(
+						config ecflow_watchman.EcflowServerConfig,
+						ecflowServerStatus ecflow_watchman.EcflowServerStatus,
+						redisUrl string) {
+						ecflow_watchman.StoreToRedis(config, ecflowServerStatus, redisUrl)
+					}(job.EcflowServerConfig, *ecflowServerStatus, redisUrl)
 				}
 			}(job, redisUrl, scrapeInterval)
+
 			log.Info("new job loaded: ", job.Owner, "/", job.Repo)
 		}
 

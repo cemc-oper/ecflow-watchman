@@ -11,7 +11,7 @@ type EcflowServerStatus struct {
 	CollectedTime time.Time                    `json:"collected_time"`
 }
 
-func GetEcflowStatus(config EcflowServerConfig, redisUrl string) {
+func GetEcflowStatus(config EcflowServerConfig) *EcflowServerStatus {
 	client := ecflow_client.CreateEcflowClient(config.Host, config.Port)
 	client.SetConnectTimeout(config.ConnectTimeout)
 	defer client.Close()
@@ -22,12 +22,12 @@ func GetEcflowStatus(config EcflowServerConfig, redisUrl string) {
 			"owner": config.Owner,
 			"repo":  config.Repo,
 		}).Error("sync has error: ", ret)
-		return
+		return nil
 	}
 
 	records := client.StatusRecords()
 
-	ecflowServerStatus := EcflowServerStatus{
+	ecflowServerStatus := &EcflowServerStatus{
 		StatusRecords: records,
 		CollectedTime: client.CollectedTime,
 	}
@@ -41,5 +41,5 @@ func GetEcflowStatus(config EcflowServerConfig, redisUrl string) {
 		" nodes at ",
 		ecflowServerStatus.CollectedTime.Format("2006-01-02 15:04:05.999999"))
 
-	StoreToRedis(config, ecflowServerStatus, redisUrl)
+	return ecflowServerStatus
 }
