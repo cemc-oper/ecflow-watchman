@@ -3,7 +3,6 @@ package ecflow_watchman
 import (
 	"github.com/go-redis/redis"
 	log "github.com/sirupsen/logrus"
-	"time"
 )
 
 type Storer interface {
@@ -54,9 +53,7 @@ func (s *RedisStorer) Send(owner string, repo string, message []byte) {
 	log.WithFields(log.Fields{
 		"owner": owner,
 		"repo":  repo,
-	}).Info(
-		"write to redis at ",
-		time.Now().Format("2006-01-02 15:04:05.999999"))
+	}).Info("store to redis...done")
 }
 
 func StoreToRedis(config EcflowServerConfig, message []byte, redisUrl string) {

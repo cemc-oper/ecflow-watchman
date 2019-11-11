@@ -12,6 +12,11 @@ type EcflowServerStatus struct {
 }
 
 func GetEcflowStatus(config EcflowServerConfig) *EcflowServerStatus {
+	log.WithFields(log.Fields{
+		"owner": config.Owner,
+		"repo":  config.Repo,
+	}).Infof("get nodes...")
+
 	client := ecflow_client.CreateEcflowClient(config.Host, config.Port)
 	client.SetConnectTimeout(config.ConnectTimeout)
 	defer client.Close()
@@ -26,7 +31,6 @@ func GetEcflowStatus(config EcflowServerConfig) *EcflowServerStatus {
 	}
 
 	records := client.StatusRecords()
-
 	ecflowServerStatus := &EcflowServerStatus{
 		StatusRecords: records,
 		CollectedTime: client.CollectedTime,
@@ -35,11 +39,7 @@ func GetEcflowStatus(config EcflowServerConfig) *EcflowServerStatus {
 	log.WithFields(log.Fields{
 		"owner": config.Owner,
 		"repo":  config.Repo,
-	}).Info(
-		"get ",
-		len(ecflowServerStatus.StatusRecords),
-		" nodes at ",
-		ecflowServerStatus.CollectedTime.Format("2006-01-02 15:04:05.999999"))
+	}).Infof("get nodes...%d", len(ecflowServerStatus.StatusRecords))
 
 	return ecflowServerStatus
 }
