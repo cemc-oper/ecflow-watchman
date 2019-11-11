@@ -113,14 +113,6 @@ var watchAllCmd = &cobra.Command{
 					// save to redis key
 					ecflow_watchman.StoreToRedis(job.EcflowServerConfig, b, redisUrl)
 
-					// NOTE: may cause I/O timeout when running in goroutine.
-					//go func(
-					//	config ecflow_watchman.EcflowServerConfig,
-					//	message []byte,
-					//	redisUrl string) {
-					//	ecflow_watchman.StoreToRedis(config, message, redisUrl)
-					//}(job.EcflowServerConfig, *ecflowServerStatus, redisUrl)
-
 					// send message to channel
 					messages <- b
 				}
