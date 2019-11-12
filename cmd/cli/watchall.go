@@ -52,9 +52,18 @@ var watchAllCmd = &cobra.Command{
 			Password: "",
 			Database: 0,
 		}
-
 		storer.Create()
 		defer storer.Close()
+
+		// create publisher
+		redisPublisher := ecflow_watchman.RedisPublisher{
+			Client:   nil,
+			Address:  redisUrl,
+			Password: "",
+			Database: 0,
+		}
+		redisPublisher.Create()
+		defer redisPublisher.Close()
 
 		for _, job := range config.ScrapeConfigs {
 			// create redis publisher for each scrape job
@@ -62,21 +71,11 @@ var watchAllCmd = &cobra.Command{
 			go func(job ScrapeJob, redisUrl string) {
 				channelName := job.Owner + "/" + job.Repo + "/status/channel"
 
-				redisPublisher := ecflow_watchman.RedisPublisher{
-					Client:      nil,
-					Pubsub:      nil,
-					ChannelName: channelName,
-					Address:     redisUrl,
-					Password:    "",
-					Database:    0,
-				}
-
-				redisPublisher.Create()
+				redisPublisher.CreatePubsub(channelName)
 				log.WithFields(log.Fields{
 					"owner": job.Owner,
 					"repo":  job.Repo,
 				}).Infof("subscribe redis...%s", channelName)
-				defer redisPublisher.Close()
 
 				for message := range messages {
 					log.WithFields(log.Fields{
@@ -84,7 +83,7 @@ var watchAllCmd = &cobra.Command{
 						"repo":  job.Repo,
 					}).Infof("publish to redis...")
 
-					err = redisPublisher.Publish(message)
+					err = redisPublisher.Publish(channelName, message)
 
 					if err != nil {
 						log.WithFields(log.Fields{

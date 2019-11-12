@@ -4,17 +4,16 @@ import "github.com/go-redis/redis"
 
 type Publisher interface {
 	Create()
-	Publish(message []byte)
+	Publish(key string, message []byte)
 	Close()
 }
 
 type RedisPublisher struct {
-	Client      *redis.Client
-	Pubsub      *redis.PubSub
-	ChannelName string
-	Address     string
-	Password    string
-	Database    int
+	Client   *redis.Client
+	Pubsubs  []*redis.PubSub
+	Address  string
+	Password string
+	Database int
 }
 
 func (p *RedisPublisher) Create() {
@@ -23,24 +22,31 @@ func (p *RedisPublisher) Create() {
 		Password: p.Password,
 		DB:       p.Database,
 	})
+}
 
-	p.Pubsub = p.Client.Subscribe(p.ChannelName)
-	_, err := p.Pubsub.Receive()
+func (p *RedisPublisher) CreatePubsub(channelName string) *redis.PubSub {
+	pubsub := p.Client.Subscribe(channelName)
+	_, err := pubsub.Receive()
 	if err != nil {
 		panic(err)
 	}
+	p.Pubsubs = append(p.Pubsubs, pubsub)
+	return pubsub
 }
 
 func (p *RedisPublisher) Close() {
-	if p.Pubsub != nil {
-		defer p.Pubsub.Close()
+	for _, pubsub := range p.Pubsubs {
+		if pubsub != nil {
+			pubsub.Close()
+		}
 	}
+	p.Pubsubs = nil
 	if p.Client != nil {
 		defer p.Client.Close()
 	}
 }
 
-func (p *RedisPublisher) Publish(message []byte) error {
-	redisCmd := p.Client.Publish(p.ChannelName, message)
+func (p *RedisPublisher) Publish(key string, message []byte) error {
+	redisCmd := p.Client.Publish(key, message)
 	return redisCmd.Err()
 }
