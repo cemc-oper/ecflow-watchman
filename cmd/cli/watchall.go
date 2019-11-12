@@ -46,6 +46,16 @@ var watchAllCmd = &cobra.Command{
 		redisUrl := config.SinkConfig["url"].(string)
 		log.Info("sink to redis: ", redisUrl)
 
+		// create redis client
+		storer := ecflow_watchman.RedisStorer{
+			Address:  redisUrl,
+			Password: "",
+			Database: 0,
+		}
+
+		storer.Create()
+		defer storer.Close()
+
 		for _, job := range config.ScrapeConfigs {
 			// create redis publisher for each scrape job
 			messages := make(chan []byte)
@@ -110,8 +120,8 @@ var watchAllCmd = &cobra.Command{
 						return
 					}
 
-					// save to redis key
-					ecflow_watchman.StoreToRedis(job.EcflowServerConfig, b, redisUrl)
+					// save to redis
+					storer.Send(job.EcflowServerConfig.Owner, job.EcflowServerConfig.Repo, b)
 
 					// send message to channel
 					messages <- b

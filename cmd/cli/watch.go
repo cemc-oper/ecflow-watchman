@@ -42,19 +42,35 @@ var watchCmd = &cobra.Command{
 		if err != nil {
 			panic(err)
 		}
+
+		config := ecflow_watchman.EcflowServerConfig{
+			Owner:          owner,
+			Repo:           repo,
+			Host:           ecflowHost,
+			Port:           ecflowPort,
+			ConnectTimeout: 10,
+		}
+
+		// create redis client
+		storer := ecflow_watchman.RedisStorer{
+			Address:  redisUrl,
+			Password: "",
+			Database: 0,
+		}
+		storer.Create()
+		defer storer.Close()
+
 		c := time.Tick(duration)
 		for _ = range c {
-			config := ecflow_watchman.EcflowServerConfig{
-				Owner:          owner,
-				Repo:           repo,
-				Host:           ecflowHost,
-				Port:           ecflowPort,
-				ConnectTimeout: 10,
-			}
 			ecflowServerStatus := ecflow_watchman.GetEcflowStatus(config)
 			if ecflowServerStatus == nil {
+				log.WithFields(log.Fields{
+					"owner": config.Owner,
+					"repo":  config.Repo,
+				}).Error("get ecflow status has error.")
 				continue
 			}
+
 			b, err := json.Marshal(ecflowServerStatus)
 			if err != nil {
 				log.WithFields(log.Fields{
@@ -63,7 +79,8 @@ var watchCmd = &cobra.Command{
 				}).Error("Marshal json has error: ", err)
 				return
 			}
-			ecflow_watchman.StoreToRedis(config, b, redisUrl)
+
+			storer.Send(config.Owner, config.Repo, b)
 		}
 	},
 }
