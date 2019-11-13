@@ -107,7 +107,7 @@ var watchAllCmd = &cobra.Command{
 					// get ecflow server status
 					ecflowServerStatus := ecflow_watchman.GetEcflowStatus(job.EcflowServerConfig)
 					if ecflowServerStatus == nil {
-						return
+						continue
 					}
 
 					b, err := json.Marshal(ecflowServerStatus)
@@ -116,7 +116,7 @@ var watchAllCmd = &cobra.Command{
 							"owner": job.EcflowServerConfig.Owner,
 							"repo":  job.EcflowServerConfig.Repo,
 						}).Error("Marshal json has error: ", err)
-						return
+						continue
 					}
 
 					// save to redis
