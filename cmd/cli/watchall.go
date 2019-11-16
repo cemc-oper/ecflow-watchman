@@ -17,14 +17,38 @@ var (
 func init() {
 	rootCmd.AddCommand(watchAllCmd)
 
-	watchAllCmd.Flags().StringVar(&configFilePath, "config-file", "", "config file path")
+	watchAllCmd.Flags().StringVar(&configFilePath, "config-file", "", "config file path, required")
 	watchAllCmd.MarkFlagRequired("config-file")
 }
+
+const watchAllCommandDescription = `
+watch all ecFlow servers listed in the configure file.
+
+For each ecflow server, watch-all will store status in redis with some key and publish status with some channel.
+
+Config file is as follows:
+
+global:
+  scrape_interval: 20s
+  scrape_timeout: 10s # not worked
+
+scrape_configs:
+  -
+    job_name: job name
+    owner: owner
+    repo: repo
+    host: ecflow server host
+    port: ecflow server port
+
+sink_config:
+  type: redis # only redis is supported
+  url: redis url
+`
 
 var watchAllCmd = &cobra.Command{
 	Use:   "watch-all",
 	Short: "watch all ecFlow servers",
-	Long:  "watch all ecFlow servers",
+	Long:  watchAllCommandDescription,
 	Run: func(cmd *cobra.Command, args []string) {
 		config, err := readConfig(configFilePath)
 		if err != nil {
@@ -60,13 +84,13 @@ var watchAllCmd = &cobra.Command{
 			Client:   nil,
 			Address:  redisUrl,
 			Password: "",
-			Database: 0,
+			Database: 1,
 		}
 		redisPublisher.Create()
 		defer redisPublisher.Close()
 
 		for _, job := range config.ScrapeConfigs {
-			// create redis publisher for each scrape job
+			// create redis publisher for a scrape job
 			messages := make(chan []byte)
 			go func(job ScrapeJob, redisUrl string) {
 				channelName := job.Owner + "/" + job.Repo + "/status/channel"
@@ -100,13 +124,15 @@ var watchAllCmd = &cobra.Command{
 				}
 			}(job, redisUrl)
 
-			// create collect goroutine for each scrape job
+			// create collect goroutine for a scrape job
 			go func(job ScrapeJob, redisUrl string, scrapeInterval time.Duration) {
 				c := time.Tick(scrapeInterval)
 				for _ = range c {
 					// get ecflow server status
 					ecflowServerStatus := ecflow_watchman.GetEcflowStatus(job.EcflowServerConfig)
 					if ecflowServerStatus == nil {
+						// ignore any error,
+						// continue to next loop when we can't get ecflow status.
 						continue
 					}
 
@@ -115,7 +141,7 @@ var watchAllCmd = &cobra.Command{
 						log.WithFields(log.Fields{
 							"owner": job.EcflowServerConfig.Owner,
 							"repo":  job.EcflowServerConfig.Repo,
-						}).Error("Marshal json has error: ", err)
+						}).Errorf("Marshal json has error: %v", err)
 						continue
 					}
 
@@ -127,7 +153,10 @@ var watchAllCmd = &cobra.Command{
 				}
 			}(job, redisUrl, scrapeInterval)
 
-			log.Info("new job loaded: ", job.Owner, "/", job.Repo)
+			log.WithFields(log.Fields{
+				"owner": job.Owner,
+				"repo":  job.Repo,
+			}).Info("new job loaded")
 		}
 
 		// block forever in the main goroutine
