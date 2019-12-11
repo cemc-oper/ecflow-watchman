@@ -7,17 +7,23 @@ import (
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
+	"net/http"
+	_ "net/http/pprof"
 	"time"
 )
 
 var (
-	configFilePath = ""
+	configFilePath   = ""
+	isProfiling      = true
+	profilingAddress = "127.0.0.1:30485"
 )
 
 func init() {
 	rootCmd.AddCommand(watchAllCmd)
 
 	watchAllCmd.Flags().StringVar(&configFilePath, "config-file", "", "config file path, required")
+	watchAllCmd.Flags().BoolVar(&isProfiling, "enable-profiling", false, "enable profiling")
+	watchAllCmd.Flags().StringVar(&profilingAddress, "profiling-address", "127.0.0.1:30485", "profiling address")
 	watchAllCmd.MarkFlagRequired("config-file")
 }
 
@@ -50,6 +56,13 @@ var watchAllCmd = &cobra.Command{
 	Short: "watch all ecFlow servers",
 	Long:  watchAllCommandDescription,
 	Run: func(cmd *cobra.Command, args []string) {
+		if isProfiling {
+			log.Infof("enable profiling...")
+			go func() {
+				log.Println(http.ListenAndServe(profilingAddress, nil))
+			}()
+		}
+
 		config, err := readConfig(configFilePath)
 		if err != nil {
 			panic(err)
