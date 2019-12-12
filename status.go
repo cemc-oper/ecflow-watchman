@@ -26,7 +26,7 @@ func GetEcflowStatus(config EcflowServerConfig) *EcflowServerStatus {
 		log.WithFields(log.Fields{
 			"owner": config.Owner,
 			"repo":  config.Repo,
-		}).Error("sync has error: ", ret)
+		}).Errorf("sync has error: %v", ret)
 		return nil
 	}
 
