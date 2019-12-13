@@ -2,7 +2,7 @@ package cli
 
 import (
 	"encoding/json"
-	"github.com/perillaroc/ecflow-watchman"
+	"github.com/nwpc-oper/ecflow-watchman"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"time"

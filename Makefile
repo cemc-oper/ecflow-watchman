@@ -42,8 +42,8 @@ export BIN_PATH := $(shell pwd)/bin
 
 cmd:
 	go build \
-		-ldflags "-X \"github.com/perillaroc/ecflow-watchman.Version=${VERSION}\" \
-    	-X \"github.com/perillaroc/ecflow-watchman.BuildTime=${BUILD_TIME}\" \
-    	-X \"github.com/perillaroc/ecflow-watchman.GitCommit=${GIT_COMMIT}\" " \
+		-ldflags "-X \"github.com/nwpc-oper/ecflow-watchman.Version=${VERSION}\" \
+    	-X \"github.com/nwpc-oper/ecflow-watchman.BuildTime=${BUILD_TIME}\" \
+    	-X \"github.com/nwpc-oper/ecflow-watchman.GitCommit=${GIT_COMMIT}\" " \
 		-o bin/ecflow_watchman \
 		cmd/main.go

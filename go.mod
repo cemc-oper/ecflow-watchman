@@ -1,13 +1,13 @@
-module github.com/perillaroc/ecflow-watchman
+module github.com/nwpc-oper/ecflow-watchman
 
 go 1.13
 
 require (
 	github.com/go-redis/redis v6.15.6+incompatible
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
+	github.com/nwpc-oper/ecflow-client-go v0.0.0-20191213114904-08b2ead48853
 	github.com/onsi/ginkgo v1.10.2 // indirect
 	github.com/onsi/gomega v1.7.0 // indirect
-	github.com/perillaroc/ecflow-client-go v0.0.0-20191014135242-8f2275ce057f
 	github.com/sirupsen/logrus v1.4.2
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/pflag v1.0.5 // indirect

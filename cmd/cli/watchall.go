@@ -2,7 +2,7 @@ package cli
 
 import (
 	"encoding/json"
-	"github.com/perillaroc/ecflow-watchman"
+	"github.com/nwpc-oper/ecflow-watchman"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
@@ -121,6 +121,7 @@ var watchAllCmd = &cobra.Command{
 					}).Infof("publish to redis...")
 
 					err = redisPublisher.Publish(channelName, message)
+					message = nil
 
 					if err != nil {
 						log.WithFields(log.Fields{

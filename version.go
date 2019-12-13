@@ -6,7 +6,7 @@ var (
 	Version    = "Unknown version"
 	BuildTime  = "Unknown build time"
 	GitCommit  = "Unknown GitCommit"
-	ProjectUrl = "https://github.com/perillaroc/ecflow-watchman"
+	ProjectUrl = "https://github.com/nwpc-oper/ecflow-watchman"
 )
 
 func PrintVersionInformation() {

@@ -1,7 +1,7 @@
 package cli
 
 import (
-	"github.com/perillaroc/ecflow-watchman"
+	"github.com/nwpc-oper/ecflow-watchman"
 	"github.com/spf13/cobra"
 )
 

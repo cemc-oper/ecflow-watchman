@@ -14,7 +14,7 @@ export ECFLOW_SOURCE_DIR=/some/path/to/ecflow/source
 export BOOST_LIB_DIR=/some/path/to/boost/stage/lib
 ```
 
-Please visit [ecflow-client-go](https://github.com/perillaroc/ecflow-client-go) for more information.
+Please visit [ecflow-client-go](https://github.com/nwpc-oper/ecflow-client-go) for more information.
 
 Use `Makefile` to build the project and `ecflow_watchman` will be under `bin` directory.
 
@@ -53,6 +53,6 @@ sink_config:
 
 ## License
 
-Copyright 2019, perillaroc
+Copyright 2019, perillaroc at nwpc-oper.
 
 `ecflow-watchman` is licensed under [MIT License](./LICENSE.md).

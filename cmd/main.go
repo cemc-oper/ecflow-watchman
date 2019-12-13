@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/perillaroc/ecflow-watchman/cmd/cli"
+	"github.com/nwpc-oper/ecflow-watchman/cmd/cli"
 	log "github.com/sirupsen/logrus"
 )
 

@@ -1,7 +1,7 @@
 package ecflow_watchman
 
 import (
-	"github.com/perillaroc/ecflow-client-go"
+	"github.com/nwpc-oper/ecflow-client-go"
 	log "github.com/sirupsen/logrus"
 	"time"
 )
