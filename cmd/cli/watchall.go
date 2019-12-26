@@ -164,6 +164,8 @@ var watchAllCmd = &cobra.Command{
 
 					// send message to channel
 					messages <- b
+
+					b = nil
 				}
 			}(job, redisUrl, scrapeInterval)
 
