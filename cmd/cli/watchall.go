@@ -160,30 +160,33 @@ func scrapeStatus(job ScrapeJob, storer ecflow_watchman.Storer, scrapeInterval t
 	var buffer bytes.Buffer
 	encoder := ffjson.NewEncoder(&buffer)
 	for _ = range c {
-		// get ecflow server status
-		ecflowServerStatus := ecflow_watchman.GetEcflowStatus(job.EcflowServerConfig)
-		if ecflowServerStatus == nil {
-			// ignore any error,
-			// continue to next loop when we can't get ecflow status.
-			continue
-		}
-		err := encoder.Encode(ecflowServerStatus)
-		//ecflowServerStatus = nil
-		if err != nil {
-			log.WithFields(log.Fields{
-				"owner": job.EcflowServerConfig.Owner,
-				"repo":  job.EcflowServerConfig.Repo,
-			}).Errorf("Marshal json has error: %v", err)
-			continue
-		}
-
-		// save to redis
-		storer.Send(job.EcflowServerConfig.Owner, job.EcflowServerConfig.Repo, &buffer)
-		buffer.Reset()
+		go fetchAndStoreRedisStatus(job, &buffer, encoder, storer)
 
 		// send message to channel
 		//messages <- b
 	}
+}
+
+func fetchAndStoreRedisStatus(
+	job ScrapeJob, buffer *bytes.Buffer, encoder *ffjson.Encoder, storer ecflow_watchman.Storer) {
+	// get ecflow server status
+	ecflowServerStatus := ecflow_watchman.GetEcflowStatus(job.EcflowServerConfig)
+	if ecflowServerStatus == nil {
+		return
+	}
+	err := encoder.Encode(ecflowServerStatus)
+	//ecflowServerStatus = nil
+	if err != nil {
+		log.WithFields(log.Fields{
+			"owner": job.EcflowServerConfig.Owner,
+			"repo":  job.EcflowServerConfig.Repo,
+		}).Errorf("Marshal json has error: %v", err)
+		return
+	}
+
+	// save to redis
+	storer.Send(job.EcflowServerConfig.Owner, job.EcflowServerConfig.Repo, buffer)
+	buffer.Reset()
 }
 
 func redisPub(job ScrapeJob, redisPublisher *ecflow_watchman.RedisPublisher, messages chan []byte) {
