@@ -27,7 +27,7 @@ func GetEcflowStatus(config EcflowServerConfig, client *ecflow_client.EcflowClie
 		return nil
 	}
 
-	recordsJson := client.StatusRecordsJson()
+	recordsJson := client.StatusRecordsJsonChar()
 
 	ecflowServerStatus := &EcflowServerStatus{
 		StatusRecords: json.RawMessage(recordsJson),
