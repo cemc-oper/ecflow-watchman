@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"bytes"
 	"github.com/nwpc-oper/ecflow-watchman"
 	"github.com/pquerna/ffjson/ffjson"
 	log "github.com/sirupsen/logrus"
@@ -175,13 +174,11 @@ func scrapeStatus(job ScrapeJob, storer ecflow_watchman.Storer, scrapeInterval t
 			}).Errorf("Marshal json has error: %v", err)
 			continue
 		}
-		buffer := bytes.NewBuffer(b)
 		//ffjson.Pool(b)
 		b = nil
 
 		// save to redis
-		storer.Send(job.EcflowServerConfig.Owner, job.EcflowServerConfig.Repo, buffer.String())
-		buffer.Reset()
+		storer.Send(job.EcflowServerConfig.Owner, job.EcflowServerConfig.Repo, b)
 
 		// send message to channel
 		//messages <- b

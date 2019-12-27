@@ -88,7 +88,7 @@ var watchCmd = &cobra.Command{
 				return
 			}
 
-			storer.Send(config.Owner, config.Repo, string(b))
+			storer.Send(config.Owner, config.Repo, b)
 		}
 	},
 }

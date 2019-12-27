@@ -7,7 +7,7 @@ import (
 
 type Storer interface {
 	Create()
-	Send(owner string, repo string, message string)
+	Send(owner string, repo string, message []byte)
 	Close()
 }
 
@@ -33,7 +33,7 @@ func (s *RedisStorer) Close() {
 	}
 }
 
-func (s *RedisStorer) Send(owner string, repo string, message string) {
+func (s *RedisStorer) Send(owner string, repo string, message []byte) {
 	log.WithFields(log.Fields{
 		"owner": owner,
 		"repo":  repo,
@@ -56,7 +56,7 @@ func (s *RedisStorer) Send(owner string, repo string, message string) {
 	}).Info("store to redis...done")
 }
 
-func StoreToRedis(config EcflowServerConfig, message string, redisUrl string) {
+func StoreToRedis(config EcflowServerConfig, message []byte, redisUrl string) {
 	storer := RedisStorer{
 		Address:  redisUrl,
 		Password: "",
