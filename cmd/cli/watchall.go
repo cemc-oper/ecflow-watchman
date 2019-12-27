@@ -158,6 +158,7 @@ type GlobalConfig struct {
 func scrapeStatus(job ScrapeJob, storer ecflow_watchman.Storer, scrapeInterval time.Duration) {
 	c := time.Tick(scrapeInterval)
 	var buffer bytes.Buffer
+	encoder := ffjson.NewEncoder(&buffer)
 	for _ = range c {
 		// get ecflow server status
 		ecflowServerStatus := ecflow_watchman.GetEcflowStatus(job.EcflowServerConfig)
@@ -166,7 +167,6 @@ func scrapeStatus(job ScrapeJob, storer ecflow_watchman.Storer, scrapeInterval t
 			// continue to next loop when we can't get ecflow status.
 			continue
 		}
-		encoder := ffjson.NewEncoder(&buffer)
 		err := encoder.Encode(ecflowServerStatus)
 		//ecflowServerStatus = nil
 		if err != nil {
