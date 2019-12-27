@@ -34,7 +34,16 @@ func (j *EcflowServerStatus) MarshalJSONBuf(buf fflib.EncodingBuffer) error {
 	_ = obj
 	_ = err
 	buf.WriteString(`{"status_records":`)
-	fflib.WriteJsonString(buf, string(j.StatusRecords))
+
+	{
+
+		obj, err = j.StatusRecords.MarshalJSON()
+		if err != nil {
+			return err
+		}
+		buf.Write(obj)
+
+	}
 	buf.WriteString(`,"collected_time":`)
 
 	{
@@ -193,25 +202,24 @@ mainparse:
 
 handle_StatusRecords:
 
-	/* handler: j.StatusRecords type=string kind=string quoted=false*/
+	/* handler: j.StatusRecords type=json.RawMessage kind=slice quoted=false*/
 
 	{
-
-		{
-			if tok != fflib.FFTok_string && tok != fflib.FFTok_null {
-				return fs.WrapErr(fmt.Errorf("cannot unmarshal %s into Go value for string", tok))
-			}
-		}
-
 		if tok == fflib.FFTok_null {
 
 		} else {
 
-			outBuf := fs.Output.Bytes()
+			tbuf, err := fs.CaptureField(tok)
+			if err != nil {
+				return fs.WrapErr(err)
+			}
 
-			j.StatusRecords = string(string(outBuf))
-
+			err = j.StatusRecords.UnmarshalJSON(tbuf)
+			if err != nil {
+				return fs.WrapErr(err)
+			}
 		}
+		state = fflib.FFParse_after_value
 	}
 
 	state = fflib.FFParse_after_value

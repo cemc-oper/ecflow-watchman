@@ -1,14 +1,15 @@
 package ecflow_watchman
 
 import (
+	"encoding/json"
 	"github.com/nwpc-oper/ecflow-client-go"
 	log "github.com/sirupsen/logrus"
 	"time"
 )
 
 type EcflowServerStatus struct {
-	StatusRecords string    `json:"status_records"`
-	CollectedTime time.Time `json:"collected_time"`
+	StatusRecords json.RawMessage `json:"status_records"`
+	CollectedTime time.Time       `json:"collected_time"`
 }
 
 func GetEcflowStatus(config EcflowServerConfig) *EcflowServerStatus {
@@ -33,7 +34,7 @@ func GetEcflowStatus(config EcflowServerConfig) *EcflowServerStatus {
 	recordsJson := client.StatusRecordsJson()
 
 	ecflowServerStatus := &EcflowServerStatus{
-		StatusRecords: recordsJson,
+		StatusRecords: json.RawMessage(recordsJson),
 		CollectedTime: client.CollectedTime,
 	}
 
