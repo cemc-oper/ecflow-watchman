@@ -41,7 +41,7 @@ func (s *RedisStorer) Send(owner string, repo string, message *bytes.Buffer) {
 	}).Infof("store to redis... ")
 
 	key := owner + "/" + repo + "/status"
-	err := s.client.Set(key, message, 0).Err()
+	err := s.client.Set(key, message.String(), 0).Err()
 
 	if err != nil {
 		log.WithFields(log.Fields{
