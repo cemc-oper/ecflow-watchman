@@ -28,6 +28,8 @@ github.com/mitchellh/go-homedir v1.1.0/go.mod h1:SfyaCUpYCn1Vlf4IUYiD9fPX4A5wJrk
 github.com/mitchellh/mapstructure v1.1.2/go.mod h1:FVVH3fgwuzCH5S8UJGiWEs2h04kUh9fWfEaFds41c1Y=
 github.com/nwpc-oper/ecflow-client-go v0.0.0-20191213114904-08b2ead48853 h1:H/No3ohedpC/5Z34xryF1RUTVFSa292FFi/7JtYMnzU=
 github.com/nwpc-oper/ecflow-client-go v0.0.0-20191213114904-08b2ead48853/go.mod h1:4YWUSAr4ZQbU7qLqivSHDdfzsCpwSgmcbmVFKnsvWp8=
+github.com/nwpc-oper/ecflow-client-go v0.0.0-20191227112046-8fd26d0e3269 h1:ZtceQftcvPkAj33D+zB8rky8ze1kl7Xx0y3qHkO6ehM=
+github.com/nwpc-oper/ecflow-client-go v0.0.0-20191227112046-8fd26d0e3269/go.mod h1:4YWUSAr4ZQbU7qLqivSHDdfzsCpwSgmcbmVFKnsvWp8=
 github.com/onsi/ginkgo v1.6.0/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=
 github.com/onsi/ginkgo v1.10.2 h1:uqH7bpe+ERSiDa34FDOF7RikN6RzXgduUF8yarlZp94=
 github.com/onsi/ginkgo v1.10.2/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=

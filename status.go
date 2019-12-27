@@ -7,8 +7,8 @@ import (
 )
 
 type EcflowServerStatus struct {
-	StatusRecords []ecflow_client.StatusRecord `json:"status_records"`
-	CollectedTime time.Time                    `json:"collected_time"`
+	StatusRecords string    `json:"status_records"`
+	CollectedTime time.Time `json:"collected_time"`
 }
 
 func GetEcflowStatus(config EcflowServerConfig) *EcflowServerStatus {
@@ -30,9 +30,9 @@ func GetEcflowStatus(config EcflowServerConfig) *EcflowServerStatus {
 		return nil
 	}
 
-	records := client.StatusRecords()
+	records := client.StatusRecordsJson()
 	ecflowServerStatus := &EcflowServerStatus{
-		StatusRecords: records,
+		StatusRecords: BytesToString(records),
 		CollectedTime: client.CollectedTime,
 	}
 
