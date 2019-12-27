@@ -12,15 +12,11 @@ type EcflowServerStatus struct {
 	CollectedTime time.Time       `json:"collected_time"`
 }
 
-func GetEcflowStatus(config EcflowServerConfig) *EcflowServerStatus {
+func GetEcflowStatus(config EcflowServerConfig, client *ecflow_client.EcflowClient) *EcflowServerStatus {
 	log.WithFields(log.Fields{
 		"owner": config.Owner,
 		"repo":  config.Repo,
 	}).Infof("get nodes...")
-
-	client := ecflow_client.CreateEcflowClient(config.Host, config.Port)
-	client.SetConnectTimeout(config.ConnectTimeout)
-	defer client.Close()
 
 	ret := client.Sync()
 	if ret != 0 {

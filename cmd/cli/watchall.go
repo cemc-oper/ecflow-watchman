@@ -2,6 +2,7 @@ package cli
 
 import (
 	"bytes"
+	ecflow_client "github.com/nwpc-oper/ecflow-client-go"
 	"github.com/nwpc-oper/ecflow-watchman"
 	"github.com/pquerna/ffjson/ffjson"
 	log "github.com/sirupsen/logrus"
@@ -159,8 +160,13 @@ func scrapeStatus(job ScrapeJob, storer ecflow_watchman.Storer, scrapeInterval t
 	c := time.Tick(scrapeInterval)
 	var buffer bytes.Buffer
 	encoder := ffjson.NewEncoder(&buffer)
+
+	client := ecflow_client.CreateEcflowClient(job.EcflowServerConfig.Host, job.EcflowServerConfig.Port)
+	client.SetConnectTimeout(job.EcflowServerConfig.ConnectTimeout)
+	defer client.Close()
+
 	for _ = range c {
-		go fetchAndStoreRedisStatus(job, &buffer, encoder, storer)
+		go fetchAndStoreRedisStatus(job, client, &buffer, encoder, storer)
 
 		// send message to channel
 		//messages <- b
@@ -169,12 +175,13 @@ func scrapeStatus(job ScrapeJob, storer ecflow_watchman.Storer, scrapeInterval t
 
 func fetchAndStoreRedisStatus(
 	job ScrapeJob,
+	client *ecflow_client.EcflowClient,
 	buffer *bytes.Buffer,
 	encoder *ffjson.Encoder,
 	storer ecflow_watchman.Storer,
 ) {
 	// get ecflow server status
-	ecflowServerStatus := ecflow_watchman.GetEcflowStatus(job.EcflowServerConfig)
+	ecflowServerStatus := ecflow_watchman.GetEcflowStatus(job.EcflowServerConfig, client)
 	if ecflowServerStatus == nil {
 		return
 	}

@@ -3,6 +3,7 @@ package cli
 import (
 	"bytes"
 	"encoding/json"
+	ecflow_client "github.com/nwpc-oper/ecflow-client-go"
 	"github.com/nwpc-oper/ecflow-watchman"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -68,8 +69,13 @@ var watchCmd = &cobra.Command{
 		defer storer.Close()
 
 		c := time.Tick(duration)
+
+		client := ecflow_client.CreateEcflowClient(config.Host, config.Port)
+		client.SetConnectTimeout(config.ConnectTimeout)
+		defer client.Close()
+
 		for _ = range c {
-			ecflowServerStatus := ecflow_watchman.GetEcflowStatus(config)
+			ecflowServerStatus := ecflow_watchman.GetEcflowStatus(config, client)
 			if ecflowServerStatus == nil {
 				log.WithFields(log.Fields{
 					"owner":     config.Owner,
