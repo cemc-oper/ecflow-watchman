@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"github.com/go-redis/redis"
 	log "github.com/sirupsen/logrus"
+	"unsafe"
 )
 
 type Storer interface {
@@ -41,7 +42,7 @@ func (s *RedisStorer) Send(owner string, repo string, message *bytes.Buffer) {
 	}).Infof("store to redis... ")
 
 	key := owner + "/" + repo + "/status"
-	value := message.String()
+	value := BytesToString(message.Bytes())
 	err := s.client.Set(key, value, 0).Err()
 
 	if err != nil {
@@ -68,4 +69,9 @@ func StoreToRedis(config EcflowServerConfig, message *bytes.Buffer, redisUrl str
 	storer.Create()
 	defer storer.Close()
 	storer.Send(config.Owner, config.Repo, message)
+}
+
+// from go-redis
+func BytesToString(b []byte) string {
+	return *(*string)(unsafe.Pointer(&b))
 }
