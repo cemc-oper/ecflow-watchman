@@ -178,7 +178,7 @@ func scrapeStatus(job ScrapeJob, storer ecflow_watchman.Storer, scrapeInterval t
 		}
 
 		// save to redis
-		storer.Send(job.EcflowServerConfig.Owner, job.EcflowServerConfig.Repo, buffer.String())
+		storer.Send(job.EcflowServerConfig.Owner, job.EcflowServerConfig.Repo, &buffer)
 		buffer.Reset()
 
 		// send message to channel

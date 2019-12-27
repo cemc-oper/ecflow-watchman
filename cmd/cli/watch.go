@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"bytes"
 	"encoding/json"
 	"github.com/nwpc-oper/ecflow-watchman"
 	log "github.com/sirupsen/logrus"
@@ -88,7 +89,7 @@ var watchCmd = &cobra.Command{
 				return
 			}
 
-			storer.Send(config.Owner, config.Repo, string(b))
+			storer.Send(config.Owner, config.Repo, bytes.NewBuffer(b))
 		}
 	},
 }
