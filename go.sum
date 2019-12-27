@@ -34,6 +34,8 @@ github.com/nwpc-oper/ecflow-client-go v0.0.0-20191227120313-6d2795ef5aeb h1:IIfo
 github.com/nwpc-oper/ecflow-client-go v0.0.0-20191227120313-6d2795ef5aeb/go.mod h1:4YWUSAr4ZQbU7qLqivSHDdfzsCpwSgmcbmVFKnsvWp8=
 github.com/nwpc-oper/ecflow-client-go v0.0.0-20191227123637-85201ee6b5c6 h1:pNup8+Yb8hKLGcdmnS3bbz/UtGSlq4B1TBSCEnE6iQY=
 github.com/nwpc-oper/ecflow-client-go v0.0.0-20191227123637-85201ee6b5c6/go.mod h1:4YWUSAr4ZQbU7qLqivSHDdfzsCpwSgmcbmVFKnsvWp8=
+github.com/nwpc-oper/ecflow-client-go v0.0.0-20191227125054-c07f7542f1e3 h1:hAVHIsDhgVIrEtcDVf+swYVu6HFwo4G0ayw7fyjbs28=
+github.com/nwpc-oper/ecflow-client-go v0.0.0-20191227125054-c07f7542f1e3/go.mod h1:4YWUSAr4ZQbU7qLqivSHDdfzsCpwSgmcbmVFKnsvWp8=
 github.com/onsi/ginkgo v1.6.0/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=
 github.com/onsi/ginkgo v1.10.2 h1:uqH7bpe+ERSiDa34FDOF7RikN6RzXgduUF8yarlZp94=
 github.com/onsi/ginkgo v1.10.2/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=
