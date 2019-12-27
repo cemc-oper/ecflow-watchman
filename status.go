@@ -1,6 +1,7 @@
 package ecflow_watchman
 
 import (
+	"bytes"
 	"github.com/nwpc-oper/ecflow-client-go"
 	"github.com/pquerna/ffjson/ffjson"
 	log "github.com/sirupsen/logrus"
@@ -12,7 +13,7 @@ type EcflowServerStatus struct {
 	CollectedTime time.Time                    `json:"collected_time"`
 }
 
-func GetEcflowStatus(config EcflowServerConfig) *EcflowServerStatus {
+func GetEcflowStatus(config EcflowServerConfig, decoder *ffjson.Decoder, buffer *bytes.Buffer) *EcflowServerStatus {
 	log.WithFields(log.Fields{
 		"owner": config.Owner,
 		"repo":  config.Repo,
@@ -32,9 +33,12 @@ func GetEcflowStatus(config EcflowServerConfig) *EcflowServerStatus {
 	}
 
 	recordsJson := client.StatusRecordsJson()
+	buffer.WriteString(recordsJson)
 
 	var records []ecflow_client.StatusRecord
-	err := ffjson.Unmarshal([]byte(recordsJson), &records)
+	err := decoder.DecodeReader(buffer, &records)
+
+	buffer.Reset()
 
 	if err != nil {
 		log.WithFields(log.Fields{

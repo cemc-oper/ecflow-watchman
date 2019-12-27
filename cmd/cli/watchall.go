@@ -159,8 +159,9 @@ func scrapeStatus(job ScrapeJob, storer ecflow_watchman.Storer, scrapeInterval t
 	c := time.Tick(scrapeInterval)
 	var buffer bytes.Buffer
 	encoder := ffjson.NewEncoder(&buffer)
+	decoder := ffjson.NewDecoder()
 	for _ = range c {
-		go fetchAndStoreRedisStatus(job, &buffer, encoder, storer)
+		go fetchAndStoreRedisStatus(job, &buffer, encoder, decoder, storer)
 
 		// send message to channel
 		//messages <- b
@@ -168,9 +169,14 @@ func scrapeStatus(job ScrapeJob, storer ecflow_watchman.Storer, scrapeInterval t
 }
 
 func fetchAndStoreRedisStatus(
-	job ScrapeJob, buffer *bytes.Buffer, encoder *ffjson.Encoder, storer ecflow_watchman.Storer) {
+	job ScrapeJob,
+	buffer *bytes.Buffer,
+	encoder *ffjson.Encoder,
+	decoder *ffjson.Decoder,
+	storer ecflow_watchman.Storer,
+) {
 	// get ecflow server status
-	ecflowServerStatus := ecflow_watchman.GetEcflowStatus(job.EcflowServerConfig)
+	ecflowServerStatus := ecflow_watchman.GetEcflowStatus(job.EcflowServerConfig, decoder, buffer)
 	if ecflowServerStatus == nil {
 		return
 	}

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"github.com/nwpc-oper/ecflow-watchman"
+	"github.com/pquerna/ffjson/ffjson"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"time"
@@ -67,9 +68,12 @@ var watchCmd = &cobra.Command{
 		storer.Create()
 		defer storer.Close()
 
+		var buffer bytes.Buffer
+		decoder := ffjson.NewDecoder()
+
 		c := time.Tick(duration)
 		for _ = range c {
-			ecflowServerStatus := ecflow_watchman.GetEcflowStatus(config)
+			ecflowServerStatus := ecflow_watchman.GetEcflowStatus(config, decoder, &buffer)
 			if ecflowServerStatus == nil {
 				log.WithFields(log.Fields{
 					"owner":     config.Owner,
