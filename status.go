@@ -32,14 +32,14 @@ func GetEcflowStatus(config EcflowServerConfig) *EcflowServerStatus {
 
 	records := client.StatusRecordsJson()
 	ecflowServerStatus := &EcflowServerStatus{
-		StatusRecords: BytesToString(records),
+		StatusRecords: records,
 		CollectedTime: client.CollectedTime,
 	}
 
 	log.WithFields(log.Fields{
 		"owner": config.Owner,
 		"repo":  config.Repo,
-	}).Infof("get nodes...%d", len(ecflowServerStatus.StatusRecords))
+	}).Infof("get nodes...done")
 
 	return ecflowServerStatus
 }
