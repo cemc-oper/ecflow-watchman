@@ -5,7 +5,9 @@ package ecflow_watchman
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
+	"github.com/nwpc-oper/ecflow-client-go"
 	fflib "github.com/pquerna/ffjson/fflib/v1"
 )
 
@@ -34,7 +36,22 @@ func (j *EcflowServerStatus) MarshalJSONBuf(buf fflib.EncodingBuffer) error {
 	_ = obj
 	_ = err
 	buf.WriteString(`{"status_records":`)
-	fflib.WriteJsonString(buf, string(j.StatusRecords))
+	if j.StatusRecords != nil {
+		buf.WriteString(`[`)
+		for i, v := range j.StatusRecords {
+			if i != 0 {
+				buf.WriteString(`,`)
+			}
+			/* Struct fall back. type=ecflow_client.StatusRecord kind=struct */
+			err = buf.Encode(&v)
+			if err != nil {
+				return err
+			}
+		}
+		buf.WriteString(`]`)
+	} else {
+		buf.WriteString(`null`)
+	}
 	buf.WriteString(`,"collected_time":`)
 
 	{
@@ -193,24 +210,66 @@ mainparse:
 
 handle_StatusRecords:
 
-	/* handler: j.StatusRecords type=string kind=string quoted=false*/
+	/* handler: j.StatusRecords type=[]ecflow_client.StatusRecord kind=slice quoted=false*/
 
 	{
 
 		{
-			if tok != fflib.FFTok_string && tok != fflib.FFTok_null {
-				return fs.WrapErr(fmt.Errorf("cannot unmarshal %s into Go value for string", tok))
+			if tok != fflib.FFTok_left_brace && tok != fflib.FFTok_null {
+				return fs.WrapErr(fmt.Errorf("cannot unmarshal %s into Go value for ", tok))
 			}
 		}
 
 		if tok == fflib.FFTok_null {
-
+			j.StatusRecords = nil
 		} else {
 
-			outBuf := fs.Output.Bytes()
+			j.StatusRecords = []ecflow_client.StatusRecord{}
 
-			j.StatusRecords = string(string(outBuf))
+			wantVal := true
 
+			for {
+
+				var tmpJStatusRecords ecflow_client.StatusRecord
+
+				tok = fs.Scan()
+				if tok == fflib.FFTok_error {
+					goto tokerror
+				}
+				if tok == fflib.FFTok_right_brace {
+					break
+				}
+
+				if tok == fflib.FFTok_comma {
+					if wantVal == true {
+						// TODO(pquerna): this isn't an ideal error message, this handles
+						// things like [,,,] as an array value.
+						return fs.WrapErr(fmt.Errorf("wanted value token, but got token: %v", tok))
+					}
+					continue
+				} else {
+					wantVal = true
+				}
+
+				/* handler: tmpJStatusRecords type=ecflow_client.StatusRecord kind=struct quoted=false*/
+
+				{
+					/* Falling back. type=ecflow_client.StatusRecord kind=struct */
+					tbuf, err := fs.CaptureField(tok)
+					if err != nil {
+						return fs.WrapErr(err)
+					}
+
+					err = json.Unmarshal(tbuf, &tmpJStatusRecords)
+					if err != nil {
+						return fs.WrapErr(err)
+					}
+				}
+
+				j.StatusRecords = append(j.StatusRecords, tmpJStatusRecords)
+
+				wantVal = false
+			}
 		}
 	}
 
