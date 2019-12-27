@@ -10,7 +10,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	_ "net/http/pprof"
-	"runtime/debug"
 	"time"
 )
 
@@ -119,7 +118,7 @@ var watchAllCmd = &cobra.Command{
 		}
 
 		// for test
-		go periodicFree(1 * time.Minute)
+		//go periodicFree(1 * time.Minute)
 
 		// block forever in the main goroutine
 		// see: https://blog.sgmansfield.com/2016/06/how-to-block-forever-in-go/
@@ -226,9 +225,9 @@ func redisPub(job ScrapeJob, redisPublisher *ecflow_watchman.RedisPublisher, mes
 	}
 }
 
-func periodicFree(d time.Duration) {
-	tick := time.Tick(d)
-	for _ = range tick {
-		debug.FreeOSMemory()
-	}
-}
+//func periodicFree(d time.Duration) {
+//	tick := time.Tick(d)
+//	for _ = range tick {
+//		debug.FreeOSMemory()
+//	}
+//}
