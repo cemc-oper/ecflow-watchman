@@ -105,70 +105,10 @@ var watchAllCmd = &cobra.Command{
 		for _, job := range config.ScrapeConfigs {
 			// create redis publisher for a scrape job
 			//messages := make(chan []byte)
-			//go func(job ScrapeJob, redisUrl string) {
-			//	channelName := job.Owner + "/" + job.Repo + "/status/channel"
-			//
-			//	redisPublisher.CreatePubsub(channelName)
-			//	log.WithFields(log.Fields{
-			//		"owner": job.Owner,
-			//		"repo":  job.Repo,
-			//	}).Infof("subscribe redis...%s", channelName)
-			//
-			//	for message := range messages {
-			//		log.WithFields(log.Fields{
-			//			"owner": job.Owner,
-			//			"repo":  job.Repo,
-			//		}).Infof("publish to redis...")
-			//
-			//		err = redisPublisher.Publish(channelName, message)
-			//		message = nil
-			//
-			//		if err != nil {
-			//			log.WithFields(log.Fields{
-			//				"owner": job.Owner,
-			//				"repo":  job.Repo,
-			//			}).Errorf("publish to redis has error: %v", err)
-			//
-			//		} else {
-			//			log.WithFields(log.Fields{
-			//				"owner": job.Owner,
-			//				"repo":  job.Repo,
-			//			}).Infof("publish to redis...done")
-			//		}
-			//	}
-			//}(job, redisUrl)
+			//go redisPub(job, &redisPublisher, messages)
 
 			// create collect goroutine for a scrape job
-			go func(job ScrapeJob, redisUrl string, scrapeInterval time.Duration) {
-				c := time.Tick(scrapeInterval)
-				for _ = range c {
-					// get ecflow server status
-					ecflowServerStatus := ecflow_watchman.GetEcflowStatus(job.EcflowServerConfig)
-					if ecflowServerStatus == nil {
-						// ignore any error,
-						// continue to next loop when we can't get ecflow status.
-						continue
-					}
-
-					b, err := ffjson.Marshal(ecflowServerStatus)
-					if err != nil {
-						log.WithFields(log.Fields{
-							"owner": job.EcflowServerConfig.Owner,
-							"repo":  job.EcflowServerConfig.Repo,
-						}).Errorf("Marshal json has error: %v", err)
-						continue
-					}
-
-					// save to redis
-					storer.Send(job.EcflowServerConfig.Owner, job.EcflowServerConfig.Repo, b)
-
-					// send message to channel
-					//messages <- b
-
-					ffjson.Pool(b)
-					b = nil
-				}
-			}(job, redisUrl, scrapeInterval)
+			go scrapeStatus(job, &storer, scrapeInterval)
 
 			log.WithFields(log.Fields{
 				"owner": job.Owner,
@@ -212,4 +152,69 @@ type ScrapeJob struct {
 type GlobalConfig struct {
 	ScrapeInterval string `yaml:"scrape_interval"`
 	ScrapeTimeout  string `yaml:"scrape_timeout"`
+}
+
+func scrapeStatus(job ScrapeJob, storer ecflow_watchman.Storer, scrapeInterval time.Duration) {
+	c := time.Tick(scrapeInterval)
+	for _ = range c {
+		// get ecflow server status
+		ecflowServerStatus := ecflow_watchman.GetEcflowStatus(job.EcflowServerConfig)
+		if ecflowServerStatus == nil {
+			// ignore any error,
+			// continue to next loop when we can't get ecflow status.
+			continue
+		}
+
+		b, err := ffjson.Marshal(ecflowServerStatus)
+		//ecflowServerStatus = nil
+		if err != nil {
+			log.WithFields(log.Fields{
+				"owner": job.EcflowServerConfig.Owner,
+				"repo":  job.EcflowServerConfig.Repo,
+			}).Errorf("Marshal json has error: %v", err)
+			continue
+		}
+
+		// save to redis
+		storer.Send(job.EcflowServerConfig.Owner, job.EcflowServerConfig.Repo, b)
+
+		// send message to channel
+		//messages <- b
+
+		//ffjson.Pool(b)
+		b = nil
+	}
+}
+
+func redisPub(job ScrapeJob, redisPublisher *ecflow_watchman.RedisPublisher, messages chan []byte) {
+	channelName := job.Owner + "/" + job.Repo + "/status/channel"
+
+	redisPublisher.CreatePubsub(channelName)
+	log.WithFields(log.Fields{
+		"owner": job.Owner,
+		"repo":  job.Repo,
+	}).Infof("subscribe redis...%s", channelName)
+
+	for message := range messages {
+		log.WithFields(log.Fields{
+			"owner": job.Owner,
+			"repo":  job.Repo,
+		}).Infof("publish to redis...")
+
+		err := redisPublisher.Publish(channelName, message)
+		message = nil
+
+		if err != nil {
+			log.WithFields(log.Fields{
+				"owner": job.Owner,
+				"repo":  job.Repo,
+			}).Errorf("publish to redis has error: %v", err)
+
+		} else {
+			log.WithFields(log.Fields{
+				"owner": job.Owner,
+				"repo":  job.Repo,
+			}).Infof("publish to redis...done")
+		}
+	}
 }
