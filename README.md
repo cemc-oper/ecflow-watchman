@@ -1,5 +1,7 @@
 # ecflow-watchman
 
+**WARNING: This program has serious memory leak problem which I am working hard to solve.**
+
 Watch ecflow servers.
 
 ## Install
@@ -50,6 +52,12 @@ sink_config:
 ```
 
 `owner` and `repo` are used in key name for redis.
+
+## Warning
+
+This program has serious memory leak problem caused by getting ecflow status using `ecflow-client-go`.
+Strings passed from c++ to goroutine are not released during loops.
+I am trying to solve this problem but haven't got any progress.
 
 ## License
 
